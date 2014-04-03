@@ -14,14 +14,9 @@ from utils import hook
 import sys
 from utils import config
 
-print("Welcome to the Centarra-CLI, for managing your account via a clean command-line interface.\r\n")
-print("See the `help' command for help on commands available here!\r\n")
-
 if not config['centarra_username']:
     print('Please enter in your Centarra username and api-key before continuing')
     sys.exit(0)
-
-import readline
 
 def completer(text, state):
     options = [i for i in hook.commands if i.startswith(text)]
@@ -30,21 +25,37 @@ def completer(text, state):
     else:
         return None
 
-readline.parse_and_bind("tab: complete")
-readline.set_completer(completer)
+def shell():
+    import readline
 
-try:
-    readline.read_history_file("languages/.cli_history")
-except:
-    pass
+    print("Welcome to the Centarra-CLI, for managing your account via a clean command-line interface.\r\n")
+    print("See the `help' command for help on commands available here!\r\n")
 
-try:
-    while True:
-        line = raw_input('>>> ')
+    readline.parse_and_bind("tab: complete")
+    readline.set_completer(completer)
+
+    try:
+        readline.read_history_file("languages/.cli_history")
+    except:
+        pass
+
+    try:
+        while True:
+            line = raw_input('>>> ')
+            print(hook.dispatch(line))
+    except KeyboardInterrupt:
+        readline.write_history_file('languages/.cli_history')
+        print("\r\nExiting program")
+    except EOFError:
+        readline.write_history_file('languages/.cli_history')
+        print("\r\nExiting program")
+
+def main():
+    if len(sys.argv) < 2:
+        shell()
+    else:
+        line = ' '.join(sys.argv[1:])
         print(hook.dispatch(line))
-except KeyboardInterrupt:
-    readline.write_history_file('languages/.cli_history')
-    print("\r\nExiting program")
-except EOFError:
-    readline.write_history_file('languages/.cli_history')
-    print("\r\nExiting program")
+
+if __name__ == '__main__':
+    main()
